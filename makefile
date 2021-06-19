@@ -26,7 +26,7 @@
 TARGET     = USBdemo
 
 # path to the root folder of the STM32Cube platform
-STM_DIR   = ../../../strumenti/STM32CubeF4
+STM_DIR   = ../STM32CubeF4
 
 # Board and MCU  names as used in the linker script path and file name, e.g. "$(STM_DIR)/Demonstrations/SW4STM32/STM32F4-DISCO/STM32F407VGTx_FLASH.ld"
 BOARD_UC   = STM32F4-DISCO
@@ -200,6 +200,7 @@ INCS      += -I$(STM_DIR)/Middlewares/ST/STM32_USB_Host_Library/Core/Inc
 INCS      += -I$(STM_DIR)/Middlewares/ST/STM32_USB_Host_Library/Class/HID/Inc
 INCS      += -I$(STM_DIR)/Drivers/BSP/Components/lis302dl
 INCS      += -I$(STM_DIR)/Drivers/BSP/Components/lis3dsh
+INCS	  += -I./include
 
 ####
 ####
@@ -267,10 +268,12 @@ $(TARGET).elf: $(OBJS)
 $(TARGET).bin: $(TARGET).elf
 	@echo "[OBJCOPY] $(TARGET).bin"
 	$(OBJCOPY) -O binary $< $@
+	mkdir -p bin
+	mv $(TARGET).* bin
 
 debug:
 	@if ! nc -z localhost 3333; then \
-		@echo "\n\t[Error] OpenOCD is not running!\n"; exit 1; \
+		echo "\n\t[Error] OpenOCD is not running!\n"; exit 1; \
 	else \
 	$(GDB)  -ex "file $(TARGET).elf" \
 			-ex "target extended-remote localhost:3333" \
@@ -312,10 +315,7 @@ update-custom-to-src:
 	cp custom/* src/
 
 clean:
-	@echo "[RM]      $(TARGET).bin"; rm -f $(TARGET).bin
-	@echo "[RM]      $(TARGET).elf"; rm -f $(TARGET).elf
-	@echo "[RM]      $(TARGET).map"; rm -f $(TARGET).map
-	@echo "[RM]      $(TARGET).lst"; rm -f $(TARGET).lst
+	@echo "[RMDIR]   bin"          ; rm -fr bin
 	@echo "[RMDIR]   dep"          ; rm -fr dep
 	@echo "[RMDIR]   obj"          ; rm -fr obj
 	

@@ -1,0 +1,10 @@
+bin
+dep
+obj
+
+# for mac
+.DS_Store
+
+# vscode cache
+.vs
+

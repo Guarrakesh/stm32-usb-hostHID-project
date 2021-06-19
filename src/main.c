@@ -60,14 +60,19 @@ void MX_USB_HOST_Process(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+#define MOUSE_COORD_THRESHOLD 5
+#define MOUSE_INVERTED_AXIS 0
+
 void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
 {
 	if (USBH_HID_GetDeviceType(phost) == HID_MOUSE)
 	{
 		HID_MOUSE_Info_TypeDef *Mouse_Info;
 		Mouse_Info = USBH_HID_GetMouseInfo(phost);
-		int X_VAL = Mouse_Info->x;
-		int Y_VAL = Mouse_Info->y;
+
+        int X_VAL = (MOUSE_INVERTED_AXIS) ? Mouse_Info->y : Mouse_Info->x;
+        int Y_VAL = (MOUSE_INVERTED_AXIS) ? Mouse_Info->x : Mouse_Info->y;
+		
 		if (X_VAL > 127) X_VAL -= 255;
 		if (Y_VAL > 127) Y_VAL -= 255;
 		
@@ -76,15 +81,15 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);
 		
-		if(Mouse_Info->buttons[0] == 1) HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_SET);
-		if(Mouse_Info->buttons[1] == 1) HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
-		if(Mouse_Info->buttons[2] == 1) HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
+		if (Mouse_Info->buttons[0] == 1) HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_SET);
+		if (Mouse_Info->buttons[1] == 1) HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
+		if (Mouse_Info->buttons[2] == 1) HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
 		//dx xval pos sopra yval neg, almeno nel mio mouse 
 		
-		if(X_VAL > 5) HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
-		if(X_VAL < -5) HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_SET);
-		if(Y_VAL < -5) HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
-		if(Y_VAL > 5) HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_SET);
+		if (X_VAL > MOUSE_COORD_THRESHOLD) HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
+		if (X_VAL < -MOUSE_COORD_THRESHOLD) HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_SET);
+		if (Y_VAL < -MOUSE_COORD_THRESHOLD) HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
+		if (Y_VAL > MOUSE_COORD_THRESHOLD) HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_SET);
 	}
 
 	/*if (USBH_HID_GetDeviceType(phost) == HID_KEYBOARD)
