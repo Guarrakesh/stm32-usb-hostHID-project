@@ -51,7 +51,6 @@
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 void MX_USB_HOST_Process(void);
-
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -70,6 +69,7 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost) {
 
 		if(X_VAL > 127) X_VAL -= 255;
 		if(Y_VAL > 127) Y_VAL -= 255;
+		
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
@@ -100,7 +100,7 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost) {
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+  
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/

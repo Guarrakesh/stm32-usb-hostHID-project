@@ -3,12 +3,12 @@
 #  > make prepare            
 #  > make                           # build the default target (USBdemo.bin)
 #  > make debug                     # run the GDB debugger
-#  > make clean                     # remove all temporary files in the working directories (obj, dep)
+#  > make clean                     # remove all temporary files in the working directories (obj, dep, bin)
 
 
 # custom PHONY targets:
 #
-#  > make prepare                   # copy all source files to a working directory (src), both files which need only compilation (lib) and files which need customization (custom and include)
+#  > make prepare                   # copy all source files to a working directory (src), both files which need only compilation (platform) and files which need customization (user and include)
 #  > make create-orig               # copy srcs to customize (from the original project demo) in a orig folder, so that you have these clean files to customize again 
 #  > make restore-src-from-orig     # restore src and include custom file files at their clean state(like orig)
 
@@ -206,8 +206,8 @@ LDFLAGS   += --specs=rdimon.specs -lc -lrdimon
 #LDFLAGS   += --specs=nosys.specs --specs=nano.specs --specs=rdimon.specs -lc -lrdimon
 
 # Source search paths
-VPATH      = ./src/custom
-VPATH	  += ./src/lib 
+VPATH      = ./src/user
+VPATH	  += ./src/platform
 
 # Debugger flags
 GDBFLAGS   =
@@ -235,14 +235,15 @@ dep obj include:
 src:
 	@echo "[MKDIR]   $@"
 	mkdir -p $@
-	mkdir -p $@/custom
-	mkdir -p $@/lib
+	mkdir -p $@/user
+	mkdir -p $@/platform
 	mkdir -p $@/linker
 	
 orig:
 	@echo "[MKDIR]   $@"
 	mkdir -p $@
 	mkdir -p $@/src
+	mkdir -p $@/src/user
 	mkdir -p $@/include
 
 obj/%.o : %.c | dirs
@@ -254,7 +255,7 @@ $(TARGET).elf: $(OBJS)
 	@echo "[LD]###################"
 	@echo "[LD]###################"
 	@echo "[LD]      $(TARGET).elf"
-	$(CC) $(CFLAGS) $(LDFLAGS) src/lib/startup_stm32f407vgtx.s $^ -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) src/platform/startup_stm32f407vgtx.s $^ -o $@
 	@echo "[OBJDUMP] $(TARGET).lst"
 	$(OBJDUMP) -St $(TARGET).elf >$(TARGET).lst
 	@echo "[SIZE]    $(TARGET).elf"
@@ -279,18 +280,18 @@ debug:
 	fi
 	
 prepare: src include
-	cp $(SRCS) src/lib
+	cp $(SRCS) src/platform
 	cp $(CUSTOM_INC) include/
-	cp $(CUSTOM_SRCS) src/custom
-	cp $(APP_DIR)/Core/Startup/startup_stm32f407vgtx.s src/lib
+	cp $(CUSTOM_SRCS) src/user
+	cp $(APP_DIR)/Core/Startup/startup_stm32f407vgtx.s src/platform
 	cp $(LDFILE) src/linker/linkerScript.ld
 	
 create-orig: orig
-	cp $(CUSTOM_SRCS) orig/src
+	cp $(CUSTOM_SRCS) orig/src/user
 	cp $(CUSTOM_INC) orig/include
 	
 restore-src-from-orig:
-	cp orig/src/* src/custom
+	cp orig/src/user/* src/user
 	cp orig/include/* include/
 
 clean:
