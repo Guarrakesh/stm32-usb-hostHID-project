@@ -159,12 +159,13 @@ CUSTOM_SRC_FN = $(notdir $(CUSTOM_SRCS))
 CUSTOM_INC_FN = $(notdir $(CUSTOM_INC))
 
 SRC_DIR = ./src
+INC_DIR = ./include
 
 ####
 ####
 # path of files to customize, but in the current src folder, not in the original project path 
 CUSTOM_SRCS_IN_SRC = $(addprefix $(SRC_DIR)/,$(CUSTOM_SRC_FN))
-CUSTOM_INC_IN_SRC = $(addprefix $(SRC_DIR)/,$(CUSTOM_INC_FN))
+CUSTOM_INC_IN_SRC = $(addprefix $(INC_DIR)/,$(CUSTOM_INC_FN))
 
 
 LDFILE     = $(APP_DIR)/STM32F407VGTX_FLASH.ld
@@ -246,9 +247,15 @@ all: $(TARGET).bin
 
 dirs: dep obj
 
-dep obj src custom:
+dep obj src:
 	@echo "[MKDIR]   $@"
 	mkdir -p $@
+
+custom:
+	@echo "[MKDIR]   $@"
+	mkdir -p $@
+	mkdir -p $@/src
+	mkdir -p $@/include
 
 obj/%.o : %.c | dirs
 	@echo "generating \"$@\" from \"$<\""
@@ -299,20 +306,21 @@ debug-python:
 	
 prepare: src
 	cp $(SRCS) src/
-	cp $(CUSTOM_INC) src/
+	cp $(CUSTOM_INC) include/
 	cp $(APP_DIR)/Core/Startup/startup_stm32f407vgtx.s src/
 	cp $(LDFILE) src/linkerScript.ld
 
 copy-src-to-custom: custom 
-	cp $(CUSTOM_SRCS_IN_SRC) custom/
-	cp $(CUSTOM_INC_IN_SRC) custom/
+	cp $(CUSTOM_SRCS_IN_SRC) custom/src
+	cp $(CUSTOM_INC_IN_SRC) custom/include
 	
 copy-orig-to-custom: custom 
-	cp $(CUSTOM_SRCS) custom/
-	cp $(CUSTOM_INC) custom/
+	cp $(CUSTOM_SRCS) custom/src
+	cp $(CUSTOM_INC) custom/include
 	
 update-custom-to-src:
-	cp custom/* src/
+	cp custom/src/* src/
+	cp custom/include/* include/
 
 clean:
 	@echo "[RMDIR]   bin"          ; rm -fr bin
