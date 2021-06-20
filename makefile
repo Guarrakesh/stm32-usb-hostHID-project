@@ -239,7 +239,7 @@ DEPS       = $(addprefix dep/,$(SRCS_FN:.c=.d))
 
 ###################################################
 
-.PHONY: all dirs debug debug-python prepare clean copy-src-to-custom update-custom-to-src copy-orig-to-custom delete-src
+.PHONY: all dirs debug debug-python prepare clean restore-src-from-orig copy-orig delete-src
 	
 all: $(TARGET).bin
 
@@ -247,11 +247,11 @@ all: $(TARGET).bin
 
 dirs: dep obj
 
-dep obj src:
+dep obj src include:
 	@echo "[MKDIR]   $@"
 	mkdir -p $@
 
-custom:
+orig:
 	@echo "[MKDIR]   $@"
 	mkdir -p $@
 	mkdir -p $@/src
@@ -304,23 +304,19 @@ debug-python:
 			-ex "monitor reset init"; \
 	fi
 	
-prepare: src
+prepare: src include
 	cp $(SRCS) src/
 	cp $(CUSTOM_INC) include/
 	cp $(APP_DIR)/Core/Startup/startup_stm32f407vgtx.s src/
 	cp $(LDFILE) src/linkerScript.ld
-
-copy-src-to-custom: custom 
-	cp $(CUSTOM_SRCS_IN_SRC) custom/src
-	cp $(CUSTOM_INC_IN_SRC) custom/include
 	
-copy-orig-to-custom: custom 
-	cp $(CUSTOM_SRCS) custom/src
-	cp $(CUSTOM_INC) custom/include
+copy-orig: orig
+	cp $(CUSTOM_SRCS) orig/src
+	cp $(CUSTOM_INC) orig/include
 	
-update-custom-to-src:
-	cp custom/src/* src/
-	cp custom/include/* include/
+restore-src-from-orig:
+	cp orig/src/* src/
+	cp orig/include/* include/
 
 clean:
 	@echo "[RMDIR]   bin"          ; rm -fr bin
