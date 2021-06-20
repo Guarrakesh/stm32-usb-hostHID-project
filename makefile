@@ -1,32 +1,34 @@
-
-# How to use this makefile:
-#
-#  > make prepare                   # copy all source files to a working directory (src), both files which need only compilation and files which need customization
-#  > make copy-src-to-custom        # copy srcs to customize in the working folder (you have to modify sources in this folder) == IT'S LIKE A GIT-PULL
-#  > make copy-orig-to-custom       # copy original srcs to customize in the working folder (idem)                             == IT'S LIKE A GIT-FORK
-#  > make update-custom-to-src      # update srcs in this project with modified working srcs                                   == IT'S LIKE A GIT-PUSH
-	#if you dont want to recompile everything, move the only file you modified from custom to src manually 
-
-#  > THESE FLOW PART CAN'T RUN BECAUSE WE NEED TO SETUP CUSTOM FILES ON OUR DEVICE
-#  > AND WE HAVE TO ELIMINATE UNNECESSARY SRCS FILES (eg accelerometer)
-
-
+# HOW TO USE THIS MAKEFILE 
+#  if on STMF407... you only need to configure the correct path(and name) for original project and STM32F4CUBE platform 
+#  > make prepare            
 #  > make                           # build the default target (USBdemo.bin)
 #  > make debug                     # run the GDB debugger
-	#anche make debug-python
 #  > make clean                     # remove all temporary files in the working directories (obj, dep)
 
 
+# custom PHONY targets:
+#
+#  > make prepare                   # copy all source files to a working directory (src), both files which need only compilation (lib) and files which need customization (custom and include)
+#  > make create-orig               # copy srcs to customize (from the original project demo) in a orig folder, so that you have these clean files to customize again 
+#  > make restore-src-from-orig     # restore src and include custom file files at their clean state(like orig)
 
 
 
 #  +++ CHECK ALL THE SETTINGS BELOW AND ADAPT THEM IF NEEDED +++
 
-# default target and name of the image and executable files to generate
-TARGET     = USBdemo
 
+# example project name generated with cubeIDE
+EXAMP_NAME = usb_cube_project
+# example project directory generated with cubeIDE
+APP_DIR    = ../$(EXAMP_NAME)
 # path to the root folder of the STM32Cube platform
 STM_DIR   = ../STM32CubeF4
+
+
+
+
+# default target and name of the image and executable files to generate
+TARGET     = USBdemo
 
 # Board and MCU  names as used in the linker script path and file name, e.g. "$(STM_DIR)/Demonstrations/SW4STM32/STM32F4-DISCO/STM32F407VGTx_FLASH.ld"
 BOARD_UC   = STM32F4-DISCO
@@ -41,13 +43,7 @@ MCU_LC     = stm32f407xx
 # pre-processor symbol to be defined for the compilation (will be used in a -Dxxx flag in gcc)
 MCU_MC     = STM32F407xx
 
-####
-####
-# example project name generated with cubeIDE
-EXAMP_NAME = TUT_UAB_HOST_HID
 
-PYTHON_DBGFILE_DIR = ../../../strumenti/gdbPython
-SVD_FN = STM32F407
 ###############################################################################
 # Directories
 
@@ -60,8 +56,7 @@ USB_DIR    = $(STM_DIR)/Middlewares/ST/STM32_USB_Host_Library
 
 ####
 ####
-# example project directory generated with cubeIDE
-APP_DIR    = ../$(EXAMP_NAME)
+
 
 
 
@@ -69,10 +64,8 @@ APP_DIR    = ../$(EXAMP_NAME)
 # Source files
 
 
-####
-####
-# file to customize, taken from the stmcube generated project 
 
+# headers to customize, taken from the stmcube generated project 
 CUSTOM_INC = \
 $(APP_DIR)/Core/Inc/main.h \
 $(APP_DIR)/Core/Inc/stm32f4xx_it.h \
@@ -81,6 +74,7 @@ $(APP_DIR)/USB_HOST/App/usb_host.h \
 $(APP_DIR)/USB_HOST/Target/usbh_conf.h \
 $(APP_DIR)/USB_HOST/Target/usbh_platform.h \
 
+# sources to customize, taken from the stmcube generated project 
 CUSTOM_SRCS = \
 $(APP_DIR)/Core/Src/main.c \
 $(APP_DIR)/Core/Src/stm32f4xx_hal_msp.c \
@@ -93,7 +87,6 @@ $(APP_DIR)/USB_HOST/Target/usbh_platform.c \
 #$(APP_DIR)/Core/Src/sysmem.c \
 
 SRCS =\
-$(CUSTOM_SRCS) \
 $(HAL_DIR)/Src/stm32f4xx_hal.c \
 $(HAL_DIR)/Src/stm32f4xx_hal_cortex.c \
 $(HAL_DIR)/Src/stm32f4xx_hal_dma.c \
@@ -148,24 +141,12 @@ $(USB_DIR)/Core/Src/usbh_pipes.c \
 #$(BSP_DIR)/$(BSP_BOARD)/stm32f4_discovery_accelerometer.c \
 
 
-
 # remove paths from the file names
 SRCS_FN = $(notdir $(SRCS))
 
-####
-####
+
 # filename of customfiles only 
 CUSTOM_SRC_FN = $(notdir $(CUSTOM_SRCS))
-CUSTOM_INC_FN = $(notdir $(CUSTOM_INC))
-
-SRC_DIR = ./src
-INC_DIR = ./include
-
-####
-####
-# path of files to customize, but in the current src folder, not in the original project path 
-CUSTOM_SRCS_IN_SRC = $(addprefix $(SRC_DIR)/,$(CUSTOM_SRC_FN))
-CUSTOM_INC_IN_SRC = $(addprefix $(INC_DIR)/,$(CUSTOM_INC_FN))
 
 
 LDFILE     = $(APP_DIR)/STM32F407VGTX_FLASH.ld
@@ -181,7 +162,6 @@ OBJCOPY    = $(PREFIX)-objcopy
 OBJDUMP    = $(PREFIX)-objdump
 SIZE       = $(PREFIX)-size
 GDB        = $(PREFIX)-gdb
-GDB_PY     = $(GDB)-py
 OCD        = openocd
 
 ###############################################################################
@@ -192,8 +172,7 @@ DEFS       = -D$(MCU_MC) -DUSE_HAL_DRIVER
 DEFS       += -DUSE_DBPRINTF
 
 # Include search paths (-I flags)
-INCS       = -Isrc
-INCS      += -I$(STM_DIR)/Drivers/CMSIS/Include
+INCS      = -I$(STM_DIR)/Drivers/CMSIS/Include
 INCS      += -I$(STM_DIR)/Drivers/CMSIS/Device/ST/STM32F4xx/Include
 INCS      += -I$(STM_DIR)/Drivers/STM32F4xx_HAL_Driver/Inc
 INCS      += -I$(STM_DIR)/Drivers/BSP/STM32F4-Discovery
@@ -220,26 +199,28 @@ CFLAGS    += -ffunction-sections -fdata-sections
 CFLAGS    += $(INCS) $(DEFS)
 
 # Linker flags
-LDFLAGS    = -Wl,--gc-sections -Wl,-Map=$(TARGET).map $(LIBS) -Tsrc/linkerScript.ld
+LDFLAGS    = -Wl,--gc-sections -Wl,-Map=$(TARGET).map $(LIBS) -Tsrc/linker/linkerScript.ld
 
 # Enable Semihosting
 LDFLAGS   += --specs=rdimon.specs -lc -lrdimon
 #LDFLAGS   += --specs=nosys.specs --specs=nano.specs --specs=rdimon.specs -lc -lrdimon
 
 # Source search paths
-VPATH      = ./src
+VPATH      = ./src/custom
+VPATH	  += ./src/lib 
 
 # Debugger flags
 GDBFLAGS   =
 
 # generate OBJS and DEPS target lists by prepending obj/ and dep prefixes
 OBJS       = $(addprefix obj/,$(SRCS_FN:.c=.o))
+OBJS       += $(addprefix obj/,$(CUSTOM_SRC_FN:.c=.o))
 DEPS       = $(addprefix dep/,$(SRCS_FN:.c=.d))
-
+DEPS       += $(addprefix dep/,$(CUSTOM_SRC_FN:.c=.d))
 
 ###################################################
 
-.PHONY: all dirs debug debug-python prepare clean restore-src-from-orig copy-orig delete-src
+.PHONY: all dirs debug prepare clean restore-src-from-orig create-orig delete-src delete-orig
 	
 all: $(TARGET).bin
 
@@ -247,10 +228,17 @@ all: $(TARGET).bin
 
 dirs: dep obj
 
-dep obj src include:
+dep obj include:
 	@echo "[MKDIR]   $@"
 	mkdir -p $@
 
+src:
+	@echo "[MKDIR]   $@"
+	mkdir -p $@
+	mkdir -p $@/custom
+	mkdir -p $@/lib
+	mkdir -p $@/linker
+	
 orig:
 	@echo "[MKDIR]   $@"
 	mkdir -p $@
@@ -266,7 +254,7 @@ $(TARGET).elf: $(OBJS)
 	@echo "[LD]###################"
 	@echo "[LD]###################"
 	@echo "[LD]      $(TARGET).elf"
-	$(CC) $(CFLAGS) $(LDFLAGS) src/startup_stm32f407vgtx.s $^ -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) src/lib/startup_stm32f407vgtx.s $^ -o $@
 	@echo "[OBJDUMP] $(TARGET).lst"
 	$(OBJDUMP) -St $(TARGET).elf >$(TARGET).lst
 	@echo "[SIZE]    $(TARGET).elf"
@@ -279,43 +267,30 @@ $(TARGET).bin: $(TARGET).elf
 	mv $(TARGET).* bin
 
 debug:
-	@if ! nc -z localhost 3333; then \
-		echo "\n\t[Error] OpenOCD is not running!\n"; exit 1; \
+	@if ! nc -z localhost 61234; then \
+		echo "\n\t[Error] gdbserver is not running!\n"; exit 1; \
 	else \
-	$(GDB)  -ex "file $(TARGET).elf" \
-			-ex "target extended-remote localhost:3333" \
-			-ex "load $(TARGET).elf" \
-			-ex "monitor arm semihosting enable" \
-			-ex "monitor reset halt" \
-			-ex "monitor reset init"; \
-	fi
-
-debug-python:
-	@if ! nc -z localhost 3333; then \
-		@echo "\n\t[Error] OpenOCD is not running!\n"; exit 1; \
-	else \
-	$(GDB_PY)  -ex "source $(PYTHON_DBGFILE_DIR)/gdb-svd.py" \
-			-ex "svd $(PYTHON_DBGFILE_DIR)/$(SVD_FN) \
-			-ex "file $(TARGET).elf" \
-			-ex "target extended-remote localhost:3333" \
-			-ex "load $(TARGET).elf" \
+	$(GDB)  -ex "file bin/$(TARGET).elf" \
+			-ex "target extended-remote localhost:61234" \
+			-ex "load bin/$(TARGET).elf" \
 			-ex "monitor arm semihosting enable" \
 			-ex "monitor reset halt" \
 			-ex "monitor reset init"; \
 	fi
 	
 prepare: src include
-	cp $(SRCS) src/
+	cp $(SRCS) src/lib
 	cp $(CUSTOM_INC) include/
-	cp $(APP_DIR)/Core/Startup/startup_stm32f407vgtx.s src/
-	cp $(LDFILE) src/linkerScript.ld
+	cp $(CUSTOM_SRCS) src/custom
+	cp $(APP_DIR)/Core/Startup/startup_stm32f407vgtx.s src/lib
+	cp $(LDFILE) src/linker/linkerScript.ld
 	
-copy-orig: orig
+create-orig: orig
 	cp $(CUSTOM_SRCS) orig/src
 	cp $(CUSTOM_INC) orig/include
 	
 restore-src-from-orig:
-	cp orig/src/* src/
+	cp orig/src/* src/custom
 	cp orig/include/* include/
 
 clean:
@@ -325,3 +300,6 @@ clean:
 	
 delete-src:
 	@echo "[RMDIR]   src"          ; rm -fr src
+	
+delete-orig:
+	@echo "[RMDIR]   orig"          ; rm -fr orig
