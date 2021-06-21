@@ -55,22 +55,19 @@ L'output del movimento del mouse è dato dall'accensione dei 4 led, uno per dire
     * private includes:\
     <code>#include "usbh_hid.h"</code>\
     * private macro:\
-    <code>#define MOUSE_COORD_THRESHOLD 5 \
-        #define     MOUSE_INVERTED_AXIS 0 \
-    </code>
+    <code>#define MOUSE_COORD_THRESHOLD 5   </code>\
+    <code>#define     MOUSE_INVERTED_AXIS 0 </code>
     * private user code:\
     *Inserire codice callback*
     
     * in <code>mx_gpio init</code> aggiungere: \
-	  <code>__HAL_RCC_GPIOD_CLK_ENABLE(); \
-	  /*Configure GPIO pins : LD4_Pin LD3_Pin LD5_Pin LD6_Pin */ \
-		GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15; \
-		GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP; \
-		GPIO_InitStruct.Pull = GPIO_NOPULL; \
-		GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW; \
-		HAL_GPIO_Init(GPIOD, &GPIO_InitStruct); \
-    </code>
-		
+	  <code>__HAL_RCC_GPIOD_CLK_ENABLE(); </code>\
+	  <code>/*Configure GPIO pins : LD4_Pin LD3_Pin LD5_Pin LD6_Pin */ </code>\
+	  <code>GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15; </code>\
+	  <code>GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP; </code>\
+	  <code>GPIO_InitStruct.Pull = GPIO_NOPULL; </code>\
+	  <code>GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW; </code>\
+	  <code>HAL_GPIO_Init(GPIOD, &GPIO_InitStruct); </code>		
 		
 17. >make
 18. avviare gdbserver
