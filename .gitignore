@@ -1,6 +1,10 @@
 bin
 dep
 obj
+orig
+
+# env variables
+.env 
 
 # for mac
 .DS_Store

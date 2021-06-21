@@ -12,7 +12,7 @@
 #  > make create-orig               # copy srcs to customize (from the original project demo) in a orig folder, so that you have these clean files to customize again 
 #  > make restore-src-from-orig     # restore src and include custom file files at their clean state(like orig)
 
-
+include .env
 
 #  +++ CHECK ALL THE SETTINGS BELOW AND ADAPT THEM IF NEEDED +++
 
