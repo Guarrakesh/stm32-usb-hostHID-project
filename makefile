@@ -24,6 +24,8 @@ APP_DIR    = ../$(EXAMP_NAME)
 # path to the root folder of the STM32Cube platform
 STM_DIR   = ../STM32CubeF4
 
+# 3333 for openocd. 61234 for st-link gdbserver
+GDB_SERVER_PORT = 61234
 
 
 
@@ -268,11 +270,11 @@ $(TARGET).bin: $(TARGET).elf
 	mv $(TARGET).* bin
 
 debug:
-	@if ! nc -z localhost 61234; then \
+	@if ! nc -z localhost $(GDB_SERVER_PORT); then \
 		echo "\n\t[Error] gdbserver is not running!\n"; exit 1; \
 	else \
 	$(GDB)  -ex "file bin/$(TARGET).elf" \
-			-ex "target extended-remote localhost:61234" \
+			-ex "target extended-remote localhost:$(GDB_SERVER_PORT)" \
 			-ex "load bin/$(TARGET).elf" \
 			-ex "monitor arm semihosting enable" \
 			-ex "monitor reset halt" \
