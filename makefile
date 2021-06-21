@@ -25,9 +25,8 @@ APP_DIR    = ../$(EXAMP_NAME)
 STM_DIR   = ../STM32CubeF4
 
 # 3333 for openocd. 61234 for st-link gdbserver
-GDB_SERVER_PORT = 61234
-
-
+GDB_SERVER_PORT = ${DEBUG_PORT}
+GDB_SERVER_HOST = ${DEBUG_SERVER}
 
 # default target and name of the image and executable files to generate
 TARGET     = USBdemo
@@ -270,11 +269,11 @@ $(TARGET).bin: $(TARGET).elf
 	mv $(TARGET).* bin
 
 debug:
-	@if ! nc -z localhost $(GDB_SERVER_PORT); then \
+	@if ! nc -z $(GDB_SERVER_HOST) $(GDB_SERVER_PORT); then \
 		echo "\n\t[Error] gdbserver is not running!\n"; exit 1; \
 	else \
 	$(GDB)  -ex "file bin/$(TARGET).elf" \
-			-ex "target extended-remote localhost:$(GDB_SERVER_PORT)" \
+			-ex "target extended-remote $(GDB_SERVER_HOST):$(GDB_SERVER_PORT)" \
 			-ex "load bin/$(TARGET).elf" \
 			-ex "monitor arm semihosting enable" \
 			-ex "monitor reset halt" \
