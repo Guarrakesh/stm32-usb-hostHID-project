@@ -276,9 +276,10 @@ debug:
 			-ex "target extended-remote $(GDB_SERVER_HOST):$(GDB_SERVER_PORT)" \
 			-ex "load bin/$(TARGET).elf" \
 			-ex "monitor arm semihosting enable" \
-			-ex "monitor reset halt" \
-			-ex "monitor reset init"; \
+			-ex "monitor reset halt"; \
 	fi
+
+# -ex "monitor reset init"; # NOT WORKING \
 	
 prepare: src include
 	cp $(SRCS) src/platform
